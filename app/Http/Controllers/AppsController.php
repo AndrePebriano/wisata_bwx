@@ -6,6 +6,7 @@ use App\Models\Kategori;
 use App\Models\Fasilitas;
 use App\Models\Tempat_Wisata;
 use App\Models\User;
+use App\Services\RekomendasiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,46 +16,59 @@ class AppsController extends Controller
     /**
      * Halaman beranda untuk user, menampilkan tempat wisata dengan filter.
      */
-    public function index(Request $request)
+    public function index(Request $request, RekomendasiService $rekomendasiService)
     {
         $kategoris = Kategori::all();
         $fasilitas = Fasilitas::all();
+        $showAll = $request->has('semua');
+        $isRekomendasi = $request->has('rekomendasi');
+        
+        // Jika user klik "Tampilkan Rekomendasi untuk Saya"
+        if ($isRekomendasi) {
+            $selectedKategori = (array) $request->input('kategori', []);
+            $selectedFasilitas = (array) $request->input('fasilitas', []);
 
+            $rekomendasi = $rekomendasiService->getRekomendasi($selectedKategori, $selectedFasilitas);
+            $tempatWisata = collect($rekomendasi)->pluck('tempat');
+
+            if (!$showAll) {
+                $tempatWisata = $tempatWisata->take(6);
+            }
+            
+            return view('apps.home', compact('kategoris', 'fasilitas', 'tempatWisata', 'showAll'));
+        }
+
+
+        // Filter biasa (tanpa rekomendasi)
         $query = Tempat_Wisata::query();
 
-        // Filter berdasarkan kategori
         if ($request->kategori) {
             $query->whereHas('kategoris', function ($q) use ($request) {
                 $q->whereIn('kategoris.id', (array) $request->kategori);
             });
         }
 
-        // Filter berdasarkan harga maksimal
         if ($request->harga) {
             $query->where('harga', '<=', $request->harga);
         }
 
-        // Filter berdasarkan fasilitas
         if ($request->fasilitas) {
             $query->whereHas('fasilitas', function ($q) use ($request) {
                 $q->whereIn('fasilitas.id', (array) $request->fasilitas);
             });
         }
 
-        // Filter berdasarkan rating minimal
         if ($request->rating) {
             $query->where('rating_rata_rata', '>=', $request->rating);
         }
 
-        // Urutkan berdasarkan rating tertinggi
         $query->orderByDesc('rating_rata_rata');
-
-        // Tampilkan semua atau hanya 6 data
-        $showAll = $request->has('semua');
         $tempatWisata = $showAll ? $query->get() : $query->take(6)->get();
 
         return view('apps.home', compact('kategoris', 'fasilitas', 'tempatWisata', 'showAll'));
     }
+
+
 
     /**
      * Detail tempat wisata.
