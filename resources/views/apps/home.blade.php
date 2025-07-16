@@ -123,7 +123,7 @@
             <a href="#" class="btn btn-maroon mt-3">Jelajahi Sekarang</a>
         </div>
     </section>
-
+    
     <!-- Filter Form -->
     <div class="container mt-5">
         <form class="bg-white p-4 shadow rounded border border-maroon" method="GET" action="{{ route('apps.home') }}">
@@ -173,28 +173,25 @@
                         @endfor
                     </select>
                 </div>
+            </div>
 
-                <div class="container mt-4">
-                    <div class="row justify-content-center align-items-center g-3">
+            <div class="container mt-4">
+                <div class="row justify-content-center align-items-center g-3">
+                    <!-- Tombol Rekomendasi -->
+                    <div class="col-auto">
+                        <button type="submit" name="rekomendasi" value="true"
+                            class="btn btn-outline-maroon fw-bold px-4 py-2">
+                            <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
+                        </button>
+                    </div>
 
-                        <!-- Tombol Rekomendasi -->
-                        <div class="col-auto">
-                            <form action="{{ route('apps.home') }}" method="GET">
-                                <button type="submit" class="btn btn-outline-maroon fw-bold px-4 py-2">
-                                    <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Tombol Cari dan Reset -->
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-maroon fw-semibold px-4">Cari</button>
-                            <a href="{{ route('apps.home') }}"
-                                class="btn btn-outline-secondary fw-semibold px-4 ms-2">Reset</a>
-                        </div>
+                    <!-- Tombol Cari dan Reset -->
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-maroon fw-semibold px-4">Cari</button>
+                        <a href="{{ route('apps.home') }}"
+                            class="btn btn-outline-secondary fw-semibold px-4 ms-2">Reset</a>
                     </div>
                 </div>
-
             </div>
         </form>
     </div>
