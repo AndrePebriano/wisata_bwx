@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Kategori;
 use App\Models\Fasilitas;
+use App\Models\RekomendasiHistoris;
 use App\Models\Tempat_Wisata;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -15,21 +16,29 @@ class AdminController extends Controller
 {
     public function index()
     {
-$totalWisata = Tempat_Wisata::count();
-    $totalKategori = \App\Models\Kategori::count();
-    $totalFasilitas = \App\Models\Fasilitas::count();
+        $totalWisata = Tempat_Wisata::count();
+        $totalKategori = \App\Models\Kategori::count();
+        $totalFasilitas = \App\Models\Fasilitas::count();
 
-    $wisataList = Tempat_Wisata::with('kategori')
-        ->orderByDesc('rating') // Jika ada kolom rating, atau pakai ->withAvg() jika dari relasi
-        ->take(5);
+        $wisataList = Tempat_Wisata::with('kategori')
+            ->orderByDesc('rating') // Jika ada kolom rating, atau pakai ->withAvg() jika dari relasi
+            ->take(5);
         // ->get();
 
-    $wisataTerbaru = Tempat_Wisata::with('kategori')
-        ->latest()
-        ->take(5);
+        $wisataTerbaru = Tempat_Wisata::with('kategori')
+            ->latest()
+            ->take(5);
         // ->get();
 
-    return view('admin.dashboard', compact('totalWisata', 'totalKategori', 'totalFasilitas', 'wisataList', 'wisataTerbaru'));
+        $histori = Auth::check()
+            ? RekomendasiHistoris::with('tempatWisata.kategoris', 'tempatWisata.fasilitas')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->take(5)
+            ->get()
+            : collect();
+        
+        return view('admin.dashboard', compact('totalWisata', 'totalKategori', 'totalFasilitas', 'wisataList', 'wisataTerbaru', 'histori'));
     }
 
     /**
