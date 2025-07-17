@@ -179,10 +179,19 @@
                 <div class="row justify-content-center align-items-center g-3">
                     <!-- Tombol Rekomendasi -->
                     <div class="col-auto">
-                        <button type="submit" name="rekomendasi" value="true"
-                            class="btn btn-outline-maroon fw-bold px-4 py-2">
-                            <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
-                        </button>
+                        @auth
+                            <!-- Jika user sudah login, tombol submit normal -->
+                            <button type="submit" name="rekomendasi" value="true"
+                                class="btn btn-outline-maroon fw-bold px-4 py-2">
+                                <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
+                            </button>
+                        @else
+                            <!-- Jika belum login, tombol trigger modal -->
+                            <button type="button" class="btn btn-outline-maroon fw-bold px-4 py-2"
+                                data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+                                <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
+                            </button>
+                        @endauth
                     </div>
 
                     <!-- Tombol Cari dan Reset -->
@@ -194,6 +203,25 @@
                 </div>
             </div>
         </form>
+    </div>
+
+    <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginRequiredModalLabel">Login Diperlukan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Anda harus login terlebih dahulu untuk melihat rekomendasi.
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-secondary">Daftar</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Tempat Wisata -->

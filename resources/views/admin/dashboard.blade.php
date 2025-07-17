@@ -76,40 +76,61 @@
 
         </div>
 
-        {{-- Daftar Tempat Wisata Terbaru --}}
+        {{-- Daftar Tempat Wisata yang Direkomendasikan --}}
         <div class="card shadow border-0">
-            <div class="card-header bg-white fw-bold fs-5">
-                <i class="bi bi-clock text-primary me-2"></i>Tempat Wisata Terbaru
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+    <div class="card-header bg-white fw-bold fs-5">
+        <i class="bi bi-stars text-warning me-2"></i>Rekomendasi Tempat Wisata Anda
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light align-middle text-nowrap">
+                    <tr>
+                        <th>No</th>
+                        <th>Wisatawan</th>
+                        <th>Nama Tempat</th>
+                        <th>Vektor Kategori</th>
+                        <th>Vektor Fasilitas</th>
+                        <th>Vektor Harga</th>
+                        <th>Vektor Rating</th>
+                        <th>Skor Similarity</th>
+                        <th>Tanggal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($histori as $index => $item)
                         <tr>
-                            <th>No</th>
-                            <th>Nama Tempat</th>
-                            <th>Alamat</th>
-                            <th>Kategori</th>
-                            <th>Fasilitas</th>
-                            <th>Tanggal Dibuat</th>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $item->user->name }}</td>
+                            <td>{{ $item->tempatWisata->nama_tempat_wisata ?? '-' }}</td>
+                            <td>
+                                <code>[{{ implode(', ', $item->vektor_kategori ?? []) }}]</code>
+                            </td>
+                            <td>
+                                <code>[{{ implode(', ', $item->vektor_fasilitas ?? []) }}]</code>
+                            </td>
+                            <td>
+                                <code>{{ number_format($item->vektor_harga, 3) }}</code>
+                            </td>
+                            <td>
+                                <code>{{ number_format($item->vektor_rating, 3) }}</code>
+                            </td>
+                            <td>
+                                <strong>{{ number_format($item->skor_similarity, 4) }}</strong>
+                            </td>
+                            <td>{{ $item->created_at->format('d M Y H:i') }}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($wisataTerbaru as $index => $wisata)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $wisata->nama }}</td>
-                                <td>{{ $wisata->alamat }}</td>
-                                <td>{{ $wisata->kategori->nama ?? '-' }}</td>
-                                <td>{{ $wisata->created_at->format('d M Y') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">Belum ada data tempat wisata baru.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">Belum ada riwayat rekomendasi.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+    </div>
+</div>
+
+
     </div>
 @endsection

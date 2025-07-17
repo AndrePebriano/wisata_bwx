@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Tempat_Wisata;
 use App\Models\Kategori;
 use App\Models\Fasilitas;
+use App\Models\RekomendasiHistoris;
+use Illuminate\Support\Facades\Auth;
 
 class RekomendasiService
 {
@@ -53,6 +55,26 @@ class RekomendasiService
 
         // Urutkan dari yang paling mirip
         usort($rekomendasi, fn($a, $b) => $b['skor'] <=> $a['skor']);
+
+        // Ambil 5 teratas
+        $top5 = array_slice($rekomendasi, 0, 5);
+
+        // Simpan histori ke DB
+        $userId = Auth::id();
+
+        if($userId){
+            foreach ($top5 as $item) {
+            RekomendasiHistoris::create([
+                'user_id' => $userId,
+                'tempat_wisata_id' => $item['tempat']->id,
+                'vektor_kategori' => $this->buildVector($allKategori, $selectedKategori),
+                'vektor_fasilitas' => $this->buildVector($allFasilitas, $selectedFasilitas),
+                'vektor_harga' => $this->normalizeHarga($harga),
+                'vektor_rating' => $this->normalizeRating($rating),
+                'skor_similarity' => $item['skor'],
+            ]);
+        }
+        }
 
         return $rekomendasi;
     }
