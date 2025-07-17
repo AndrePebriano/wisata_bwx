@@ -22,20 +22,30 @@ class AppsController extends Controller
         $fasilitas = Fasilitas::all();
         $showAll = $request->has('semua');
         $isRekomendasi = $request->has('rekomendasi');
-        
+
         // Jika user klik "Tampilkan Rekomendasi untuk Saya"
         if ($isRekomendasi) {
             $selectedKategori = (array) $request->input('kategori', []);
             $selectedFasilitas = (array) $request->input('fasilitas', []);
+            $harga = $request->input('harga');
+            $rating = $request->input('rating');
 
-            $rekomendasi = $rekomendasiService->getRekomendasi($selectedKategori, $selectedFasilitas);
+            $rekomendasi = $rekomendasiService->getRekomendasi($selectedKategori, $selectedFasilitas, $harga, $rating);
+
             $tempatWisata = collect($rekomendasi)->pluck('tempat');
 
             if (!$showAll) {
                 $tempatWisata = $tempatWisata->take(6);
             }
-            
-            return view('apps.home', compact('kategoris', 'fasilitas', 'tempatWisata', 'showAll'));
+
+            return view('apps.home', [
+                'kategoris' => $kategoris,
+                'fasilitas' => $fasilitas,
+                'tempatWisata' => $tempatWisata,
+                'showAll' => $showAll,
+                'rekomendasi' => $rekomendasi,
+                'isRekomendasi' => true
+            ]);
         }
 
 
@@ -65,7 +75,7 @@ class AppsController extends Controller
         $query->orderByDesc('rating_rata_rata');
         $tempatWisata = $showAll ? $query->get() : $query->take(6)->get();
 
-        return view('apps.home', compact('kategoris', 'fasilitas', 'tempatWisata', 'showAll'));
+        return view('apps.home', compact('kategoris', 'fasilitas', 'tempatWisata', 'showAll') + ['isRekomendasi' => false]);
     }
 
 

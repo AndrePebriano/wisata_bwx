@@ -123,7 +123,7 @@
             <a href="#" class="btn btn-maroon mt-3">Jelajahi Sekarang</a>
         </div>
     </section>
-    
+
     <!-- Filter Form -->
     <div class="container mt-5">
         <form class="bg-white p-4 shadow rounded border border-maroon" method="GET" action="{{ route('apps.home') }}">
@@ -210,6 +210,21 @@
                             <div class="card-body d-flex flex-column">
                                 <h5 class="fw-bold mb-2">{{ $wisata->nama_tempat_wisata }}</h5>
 
+                                @php
+                                    $skor = null;
+                                    if (isset($isRekomendasi) && $isRekomendasi) {
+                                        $item = collect($rekomendasi)->firstWhere('tempat.id', $wisata->id);
+                                        $skor = $item['skor'] ?? null;
+                                    }
+                                @endphp
+
+                                @if ($skor !== null)
+                                    <div class="mb-2">
+                                        <span class="badge bg-warning text-dark">Skor Rekomendasi:
+                                            {{ number_format($skor, 3) }}</span>
+                                    </div>
+                                @endif
+
                                 <p class="mb-1 text-muted small">
                                     <i class="bi bi-geo-alt-fill me-1"></i> {{ $wisata->lokasi }}
                                 </p>
@@ -238,6 +253,7 @@
                                     class="btn btn-maroon w-100 mt-auto">Lihat Detail</a>
                             </div>
                         </div>
+
                     </div>
                 @empty
                     <p class="text-center">Belum ada data tempat wisata.</p>
