@@ -164,13 +164,49 @@
                 <!-- Rating -->
                 <div class="col-md">
                     <label for="rating" class="form-label fw-semibold text-maroon">Rating</label>
-                    <select class="form-select border-maroon text-dark" name="rating" id="rating">
+                    <select class="form-select" name="rating" id="rating">
                         <option value="">Pilih Rating</option>
-                        @for ($i = 5; $i >= 1; $i--)
-                            <option value="{{ $i }}" {{ request('rating') == $i ? 'selected' : '' }}>
-                                {{ $i }} ke atas
-                            </option>
-                        @endfor
+                        <option value="5.0" {{ request('rating') == '5.0' ? 'selected' : '' }}>5.0</option>
+                        <option value="4.9" {{ request('rating') == '4.9' ? 'selected' : '' }}>4.9</option>
+                        <option value="4.8" {{ request('rating') == '4.8' ? 'selected' : '' }}>4.8</option>
+                        <option value="4.7" {{ request('rating') == '4.7' ? 'selected' : '' }}>4.7</option>
+                        <option value="4.6" {{ request('rating') == '4.6' ? 'selected' : '' }}>4.6</option>
+                        <option value="4.5" {{ request('rating') == '4.5' ? 'selected' : '' }}>4.5</option>
+                        <option value="4.4" {{ request('rating') == '4.4' ? 'selected' : '' }}>4.4</option>
+                        <option value="4.3" {{ request('rating') == '4.3' ? 'selected' : '' }}>4.3</option>
+                        <option value="4.2" {{ request('rating') == '4.2' ? 'selected' : '' }}>4.2</option>
+                        <option value="4.1" {{ request('rating') == '4.1' ? 'selected' : '' }}>4.1</option>
+                        <option value="4.0" {{ request('rating') == '4.0' ? 'selected' : '' }}>4.0</option>
+                        <option value="3.9" {{ request('rating') == '3.9' ? 'selected' : '' }}>3.9</option>
+                        <option value="3.8" {{ request('rating') == '3.8' ? 'selected' : '' }}>3.8</option>
+                        <option value="3.7" {{ request('rating') == '3.7' ? 'selected' : '' }}>3.7</option>
+                        <option value="3.6" {{ request('rating') == '3.6' ? 'selected' : '' }}>3.6</option>
+                        <option value="3.5" {{ request('rating') == '3.5' ? 'selected' : '' }}>3.5</option>
+                        <option value="3.4" {{ request('rating') == '3.4' ? 'selected' : '' }}>3.4</option>
+                        <option value="3.3" {{ request('rating') == '3.3' ? 'selected' : '' }}>3.3</option>
+                        <option value="3.2" {{ request('rating') == '3.2' ? 'selected' : '' }}>3.2</option>
+                        <option value="3.1" {{ request('rating') == '3.1' ? 'selected' : '' }}>3.1</option>
+                        <option value="3.0" {{ request('rating') == '3.0' ? 'selected' : '' }}>3.0</option>
+                        <option value="2.9" {{ request('rating') == '2.9' ? 'selected' : '' }}>2.9</option>
+                        <option value="2.8" {{ request('rating') == '2.8' ? 'selected' : '' }}>2.8</option>
+                        <option value="2.7" {{ request('rating') == '2.7' ? 'selected' : '' }}>2.7</option>
+                        <option value="2.6" {{ request('rating') == '2.6' ? 'selected' : '' }}>2.6</option>
+                        <option value="2.5" {{ request('rating') == '2.5' ? 'selected' : '' }}>2.5</option>
+                        <option value="2.4" {{ request('rating') == '2.4' ? 'selected' : '' }}>2.4</option>
+                        <option value="2.3" {{ request('rating') == '2.3' ? 'selected' : '' }}>2.3</option>
+                        <option value="2.2" {{ request('rating') == '2.2' ? 'selected' : '' }}>2.2</option>
+                        <option value="2.1" {{ request('rating') == '2.1' ? 'selected' : '' }}>2.1</option>
+                        <option value="2.0" {{ request('rating') == '2.0' ? 'selected' : '' }}>2.0</option>
+                        <option value="1.9" {{ request('rating') == '1.9' ? 'selected' : '' }}>1.9</option>
+                        <option value="1.8" {{ request('rating') == '1.8' ? 'selected' : '' }}>1.8</option>
+                        <option value="1.7" {{ request('rating') == '1.7' ? 'selected' : '' }}>1.7</option>
+                        <option value="1.6" {{ request('rating') == '1.6' ? 'selected' : '' }}>1.6</option>
+                        <option value="1.5" {{ request('rating') == '1.5' ? 'selected' : '' }}>1.5</option>
+                        <option value="1.4" {{ request('rating') == '1.4' ? 'selected' : '' }}>1.4</option>
+                        <option value="1.3" {{ request('rating') == '1.3' ? 'selected' : '' }}>1.3</option>
+                        <option value="1.2" {{ request('rating') == '1.2' ? 'selected' : '' }}>1.2</option>
+                        <option value="1.1" {{ request('rating') == '1.1' ? 'selected' : '' }}>1.1</option>
+                        <option value="1.0" {{ request('rating') == '1.0' ? 'selected' : '' }}>1.0</option>
                     </select>
                 </div>
             </div>
