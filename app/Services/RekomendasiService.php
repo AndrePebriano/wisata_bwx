@@ -16,104 +16,168 @@ class RekomendasiService
         $harga = null,
         $rating = null
     ) {
-        $allKategori = Kategori::pluck('id')->toArray();
-        $allFasilitas = Fasilitas::pluck('id')->toArray();
+        $kategoriBobot = $this->getKategoriBobot();
+        $allFasilitas = Fasilitas::all()->keyBy('id');
 
-        // Vektor preferensi user
-        $userKategoriVector = $this->buildVector($allKategori, $selectedKategori);
-        $userFasilitasVector = $this->buildVector($allFasilitas, $selectedFasilitas);
+        // 1) BANGUN VEKTOR PREFERENSI USER
+        $userKategoriScore = $this->normalizeKategori($selectedKategori, $kategoriBobot);
+        $userFasilitasVector = $this->buildFasilitasVector($selectedFasilitas, $allFasilitas);
         $userHarga = [$this->normalizeHarga($harga)];
         $userRating = [$this->normalizeRating($rating)];
-
-        $userVector = array_merge($userKategoriVector, $userFasilitasVector, $userHarga, $userRating);
-
+        
+        $userVector = array_merge(
+            $userKategoriScore,
+            $userFasilitasVector,
+            $userHarga,
+            $userRating
+        );
+        
+        // 2) LOOP SEMUA TEMPAT, HITUNG COSINE SIMILARITY
         $tempatWisataList = Tempat_Wisata::with(['kategoris', 'fasilitas'])->get();
-
         $rekomendasi = [];
 
         foreach ($tempatWisataList as $tempat) {
-            $tempatKategoriIDs = $tempat->kategoris->pluck('id')->toArray();
-            $tempatFasilitasIDs = $tempat->fasilitas->pluck('id')->toArray();
+            // kategori
+            $kategoriIds = $tempat->kategoris->pluck('id')->toArray();
+            $tempatKategoriScore = $this->normalizeKategori($kategoriIds, $kategoriBobot);
 
-            $tempatKategoriVector = $this->buildVector($allKategori, $tempatKategoriIDs);
-            $tempatFasilitasVector = $this->buildVector($allFasilitas, $tempatFasilitasIDs);
+            // fasilitas
+            $tempatFasilitasIds = $tempat->fasilitas->pluck('id')->toArray();
+            $tempatFasilitasVector = $this->buildFasilitasVector($tempatFasilitasIds, $allFasilitas);
+            
+            // harga & rating
             $tempatHarga = [$this->normalizeHarga($tempat->harga)];
             $tempatRating = [$this->normalizeRating($tempat->rating_rata_rata)];
 
-            $tempatVector = array_merge($tempatKategoriVector, $tempatFasilitasVector, $tempatHarga, $tempatRating);
+            // bentuk vektor tempat
+            $tempatVector = array_merge(
+                $tempatKategoriScore,
+                $tempatFasilitasVector,
+                $tempatHarga,
+                $tempatRating
+            );
 
-            $similarity = $this->cosineSimilarity($userVector, $tempatVector);
-
-            // Hanya masukkan jika similarity > 0
-            if ($similarity > 0) {
+            $skor = $this->cosineSimilarity($userVector, $tempatVector);
+            if ($skor > 0) {
                 $rekomendasi[] = [
                     'tempat' => $tempat,
-                    'skor' => $similarity
+                    'skor' => $skor,
+                    'fasilitas_vector' => $tempatFasilitasVector
                 ];
             }
         }
 
-        // Urutkan dari yang paling mirip
+        // 3) URUTKAN & AMBIL 5 TERATAS
         usort($rekomendasi, fn($a, $b) => $b['skor'] <=> $a['skor']);
-
-        // Ambil 5 teratas
         $top5 = array_slice($rekomendasi, 0, 5);
+        
+        // 4) SIMPAN HISTORIS
+        if ($userId = Auth::id()) {
+            $batchData = [];
+            $timestamp = now();
 
-        // Simpan histori ke DB
-        $userId = Auth::id();
-
-        if($userId){
             foreach ($top5 as $item) {
-            RekomendasiHistoris::create([
-                'user_id' => $userId,
-                'tempat_wisata_id' => $item['tempat']->id,
-                'vektor_kategori' => $this->buildVector($allKategori, $selectedKategori),
-                'vektor_fasilitas' => $this->buildVector($allFasilitas, $selectedFasilitas),
-                'vektor_harga' => $this->normalizeHarga($harga),
-                'vektor_rating' => $this->normalizeRating($rating),
-                'skor_similarity' => $item['skor'],
-            ]);
-        }
-        }
+                $tempat = $item['tempat'];
 
-        return $rekomendasi;
-    }
+                $batchData[] = [
+                    'user_id' => $userId,
+                    'tempat_wisata_id' => $tempat->id,
+                    'vektor_kategori' => $this->normalizeKategori(
+                        $tempat->kategoris->pluck('id')->toArray(),
+                        $this->getKategoriBobot()
+                    )[0], // nilai decimal
+                    'vektor_fasilitas' => json_encode($item['fasilitas_vector']), // array sederhana
+                    'vektor_harga' => $this->normalizeHarga($tempat->harga), // decimal
+                    'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata), // decimal
+                    'skor_similarity' => $item['skor'],
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ];
+            }
 
-    private function buildVector(array $allIds, array $selectedIds): array
-    {
-        return array_map(fn($id) => in_array($id, $selectedIds) ? 1 : 0, $allIds);
-    }
-
-    private function normalizeHarga($harga): float
-    {
-        // Harga maksimal dianggap 100.000 untuk normalisasi
-        if (!$harga || $harga <= 0) return 0.0;
-        $normalized = 1 - min($harga / 100000, 1); // makin murah makin besar
-        return round($normalized, 3);
-    }
-
-    private function normalizeRating($rating): float
-    {
-        if (!$rating || $rating <= 0) return 0.0;
-        return round(min($rating / 5, 1), 3); // rating 5 jadi 1.0
-    }
-
-    private function cosineSimilarity(array $vec1, array $vec2): float
-    {
-        $dotProduct = 0;
-        $normA = 0;
-        $normB = 0;
-
-        for ($i = 0; $i < count($vec1); $i++) {
-            $dotProduct += $vec1[$i] * $vec2[$i];
-            $normA += $vec1[$i] ** 2;
-            $normB += $vec2[$i] ** 2;
+            RekomendasiHistoris::insert($batchData);
         }
 
-        if ($normA == 0 || $normB == 0) {
-            return 0.0;
+        return array_map(fn($item) => ['tempat' => $item['tempat'], 'skor' => $item['skor']], $top5);
+    }
+
+    private function buildFasilitasVector(array $selectedFasilitasIds, $allFasilitas): array
+    {
+        $vector = [];
+        foreach ($allFasilitas as $fasilitas) {
+            $vector[] = in_array($fasilitas->id, $selectedFasilitasIds) ? 1 : 0;
+        }
+        return $vector;
+    }
+
+    private function cosineSimilarity(array $a, array $b): float
+    {
+        if (count($a) !== count($b)) return 0.0;
+
+        $dotProduct = 0.0;
+        $normA = 0.0;
+        $normB = 0.0;
+
+        for ($i = 0; $i < count($a); $i++) {
+            $dotProduct += $a[$i] * $b[$i];
+            $normA += $a[$i] * $a[$i];
+            $normB += $b[$i] * $b[$i];
         }
 
-        return $dotProduct / (sqrt($normA) * sqrt($normB));
+        if ($normA <= 0 || $normB <= 0) return 0.0;
+
+        $similarity = $dotProduct / (sqrt($normA) * sqrt($normB));
+        return round(max(-1.0, min(1.0, $similarity)), 4);
+    }
+
+    private function normalizeKategori(array $selectedIds, array $bobot): array
+    {
+        if (empty($selectedIds)) return [0.0];
+
+        $scores = [];
+        foreach ($selectedIds as $id) {
+            if (isset($bobot[$id])) {
+                $nilai = $bobot[$id];
+                if ($nilai >= 1 && $nilai <= 6) {
+                    $scores[] = round(($nilai - 1) / 5, 4);
+                }
+            }
+        }
+
+        return [round(count($scores) ? array_sum($scores) / count($scores) : 0.0, 4)];
+    }
+
+    private function normalizeFasilitas($jumlah): float
+    {
+        if ($jumlah <= 4 || $jumlah >= 10) return 0.0;
+        return round(($jumlah - 4) / (10 - $jumlah), 4);
+    }
+
+    private function normalizeHarga($h): float
+    {
+        if (!$h || $h <= 0) return 0.0;
+        $min = 10000;
+        $max = 50000;
+        $v = ($h - $min) / ($max - $min);
+        return round(max(min($v, 1), 0), 4);
+    }
+
+    private function normalizeRating($r): float
+    {
+        if (!$r || $r <= 0) return 0.0;
+        $min = 4.5;
+        $max = 4.7;
+        $v = ($r - $min) / ($max - $min);
+        return round(max(min($v, 1), 0), 4);
+    }
+
+    private function getKategoriBobot(): array
+    {
+        return Kategori::pluck('nilai', 'id')->toArray();
+    }
+
+    private function calculateFacilityScore(array $facilityVector): float
+    {
+        return round(array_sum($facilityVector) / count($facilityVector), 4);
     }
 }
