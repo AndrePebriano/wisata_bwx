@@ -118,6 +118,12 @@
                 {{ $wisata->nama_tempat_wisata }}
             </h2>
 
+            @if (session('success'))
+                <div id="success-alert" class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+            
             <p class="text-muted">
                 <i class="bi bi-geo-alt-fill text-danger"></i> {{ $wisata->lokasi }}
             </p>
@@ -153,6 +159,49 @@
             <p class="fs-5 fw-semibold text-success">
                 Rp {{ number_format($wisata->harga ?? 0, 0, ',', '.') }}
             </p>
+
+            @auth
+                <h5 class="fw-bold mt-5">Beri Ulasan:</h5>
+                <form action="{{ route('review.wisata', $wisata->id) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Rating:</label>
+                        <div id="star-rating" class="text-warning fs-4">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <i class="bi bi-star" data-value="{{ $i }}"></i>
+                            @endfor
+                        </div>
+                        <input type="hidden" name="rating" id="rating" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ulasan" class="form-label">Ulasan:</label>
+                        <textarea name="ulasan" id="ulasan" rows="3" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="btn border-maroon">Kirim</button>
+                </form>
+            @else
+                <p><a href="{{ route('login') }}">Login</a> untuk memberikan ulasan.</p>
+            @endauth
+
+            <h5 class="fw-bold mt-5">Ulasan Pengunjung:</h5>
+            @forelse ($wisata->reviews as $review)
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ $review->user->name ?? 'Pengunjung' }}</strong>
+                        <span class="text-warning">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <i class="bi {{ $i <= $review->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
+                            @endfor
+                        </span>
+                    </div>
+                    <p class="mb-0">{{ $review->ulasan }}</p>
+                    <small class="text-muted">{{ $review->created_at->format('d M Y') }}</small>
+                </div>
+            @empty
+                <p>Belum ada ulasan.</p>
+            @endforelse
+
         </div>
     </section>
 
@@ -190,6 +239,39 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Hapus alert setelah 3 detik (3000ms)
+        setTimeout(function() {
+            const alertBox = document.getElementById('success-alert');
+            if (alertBox) {
+                alertBox.remove();
+            }
+        }, 3000);
+    </script>
+
+    <script>
+        const stars = document.querySelectorAll('#star-rating i');
+        const ratingInput = document.getElementById('rating');
+
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = star.getAttribute('data-value');
+                ratingInput.value = rating;
+
+                // Update UI: fill bintang sampai yang diklik
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= rating) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.add('bi-star');
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>
