@@ -6,6 +6,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\FasilitasController;
 use App\Http\Controllers\TempatWisataController;
 use App\Http\Controllers\AppsController;
+use App\Http\Controllers\ReviewController;
 
 // Autentikasi (login, register, dll)
 require __DIR__ . '/auth.php';
@@ -13,6 +14,7 @@ require __DIR__ . '/auth.php';
 // Halaman utama
 Route::get('/', [AppsController::class, 'index'])->name('apps.home');
 Route::get('/apps/home', [AppsController::class, 'index'])->name('apps.home');
+Route::post('/review/{id}', [ReviewController::class, 'store'])->middleware('auth')->name('review.wisata');
 
 // Detail tempat wisata
 Route::get('/wisata/{id}', [AppsController::class, 'show'])->name('wisata.detail');

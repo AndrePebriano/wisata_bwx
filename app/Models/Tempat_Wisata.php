@@ -56,4 +56,9 @@ class Tempat_Wisata extends Model
         return $this->belongsToMany(User::class, 'favorites', 'tempat_wisata_id', 'user_id')
             ->withTimestamps();
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'tempat_wisata_id');
+    }
 }
