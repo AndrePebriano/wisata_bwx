@@ -24,32 +24,28 @@ class RekomendasiService
         $userFasilitasVector = $this->buildFasilitasVector($selectedFasilitas, $allFasilitas);
         $userHarga = [$this->normalizeHarga($harga)];
         $userRating = [$this->normalizeRating($rating)];
-        
+
         $userVector = array_merge(
             $userKategoriScore,
             $userFasilitasVector,
             $userHarga,
             $userRating
         );
-        
+
         // 2) LOOP SEMUA TEMPAT, HITUNG COSINE SIMILARITY
         $tempatWisataList = Tempat_Wisata::with(['kategoris', 'fasilitas'])->get();
         $rekomendasi = [];
 
         foreach ($tempatWisataList as $tempat) {
-            // kategori
             $kategoriIds = $tempat->kategoris->pluck('id')->toArray();
             $tempatKategoriScore = $this->normalizeKategori($kategoriIds, $kategoriBobot);
 
-            // fasilitas
             $tempatFasilitasIds = $tempat->fasilitas->pluck('id')->toArray();
             $tempatFasilitasVector = $this->buildFasilitasVector($tempatFasilitasIds, $allFasilitas);
-            
-            // harga & rating
+
             $tempatHarga = [$this->normalizeHarga($tempat->harga)];
             $tempatRating = [$this->normalizeRating($tempat->rating_rata_rata)];
 
-            // bentuk vektor tempat
             $tempatVector = array_merge(
                 $tempatKategoriScore,
                 $tempatFasilitasVector,
@@ -58,7 +54,7 @@ class RekomendasiService
             );
 
             $skor = $this->cosineSimilarity($userVector, $tempatVector);
-            if ($skor > 0) {
+            if ($skor >= 0.5) {
                 $rekomendasi[] = [
                     'tempat' => $tempat,
                     'skor' => $skor,
@@ -67,11 +63,12 @@ class RekomendasiService
             }
         }
 
-        // 3) URUTKAN & AMBIL 5 TERATAS
+        // 3) URUTKAN SEMUA YANG LOLOS AMBANG BATAS
         usort($rekomendasi, fn($a, $b) => $b['skor'] <=> $a['skor']);
+
+        // 4) SIMPAN 5 TERATAS SAJA KE HISTORI
         $top5 = array_slice($rekomendasi, 0, 5);
-        
-        // 4) SIMPAN HISTORIS
+
         if ($userId = Auth::id()) {
             $batchData = [];
             $timestamp = now();
@@ -85,10 +82,10 @@ class RekomendasiService
                     'vektor_kategori' => $this->normalizeKategori(
                         $tempat->kategoris->pluck('id')->toArray(),
                         $this->getKategoriBobot()
-                    )[0], // nilai decimal
-                    'vektor_fasilitas' => json_encode($item['fasilitas_vector']), // array sederhana
-                    'vektor_harga' => $this->normalizeHarga($tempat->harga), // decimal
-                    'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata), // decimal
+                    )[0],
+                    'vektor_fasilitas' => json_encode($item['fasilitas_vector']),
+                    'vektor_harga' => $this->normalizeHarga($tempat->harga),
+                    'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata),
                     'skor_similarity' => $item['skor'],
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
@@ -98,8 +95,13 @@ class RekomendasiService
             RekomendasiHistoris::insert($batchData);
         }
 
-        return array_map(fn($item) => ['tempat' => $item['tempat'], 'skor' => $item['skor']], $top5);
+        // 5) RETURN SEMUA YANG LOLOS ≥ 0.5
+        return array_map(
+            fn($item) => ['tempat' => $item['tempat'], 'skor' => $item['skor']],
+            $rekomendasi
+        );
     }
+
 
     private function buildFasilitasVector(array $selectedFasilitasIds, $allFasilitas): array
     {
