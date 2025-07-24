@@ -285,7 +285,7 @@
                                 @if ($skor !== null)
                                     <div class="mb-2">
                                         <span class="badge bg-warning text-dark">Skor Rekomendasi:
-                                            {{ number_format($skor, 3) }}</span>
+                                            {{ number_format($skor, 4) }}</span>
                                     </div>
                                 @endif
 

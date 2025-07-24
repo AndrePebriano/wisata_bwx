@@ -5,7 +5,7 @@
     <h1 class="mb-4">Data Tempat Wisata</h1>
 
     <a href="{{ route('admin.tempat-wisata.create') }}" class="btn btn-primary mb-3">Tambah Tempat Wisata</a>
-
+    <a href="{{route('normalisasi.wisata')}}" class="btn btn-secondary mb-3">Hasil Perhitungan Normalisasi</a>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -29,7 +29,7 @@
                 <!-- Tampilkan gambar -->
                 <td>
                     @if($wisata->gambar)
-<img src="{{ asset($wisata->gambar) }}" width="100">
+                        <img src="{{ asset($wisata->gambar) }}" width="100">
                     @else
                         <span class="text-muted">Tidak ada</span>
                     @endif

@@ -6,6 +6,7 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\FasilitasController;
 use App\Http\Controllers\TempatWisataController;
 use App\Http\Controllers\AppsController;
+use App\Http\Controllers\NormalisasiTempatWisataController;
 use App\Http\Controllers\ReviewController;
 
 // Autentikasi (login, register, dll)
@@ -42,6 +43,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Edit dan update profil admin
     Route::get('/adminedit', [AdminController::class, 'edit'])->name('admin.edit');
     Route::put('/update', [AdminController::class, 'update'])->name('admin.updateprofile');
+
+    Route::get('normalisasi_wisata', [NormalisasiTempatWisataController::class, 'index'])->name('normalisasi.wisata');
+    Route::get('/normalisasi/detail/{id}', [NormalisasiTempatWisataController::class, 'showDetail'])->name('normalisasi.detail');
 });
 
 // ROUTE WISATAWAN

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Tempat_Wisata;
 use App\Models\Kategori;
 use App\Models\Fasilitas;
+use App\Models\NormalisasiTempatWisata;
 use App\Models\RekomendasiHistoris;
 use Illuminate\Support\Facades\Auth;
 
@@ -58,9 +59,20 @@ class RekomendasiService
                 $rekomendasi[] = [
                     'tempat' => $tempat,
                     'skor' => $skor,
-                    'fasilitas_vector' => $tempatFasilitasVector
+                    'fasilitas_vector' => $tempatFasilitasVector,
                 ];
             }
+
+            // simpan ke tabel normalisasi (jika belum ada)
+            NormalisasiTempatWisata::updateOrCreate(
+                ['tempat_wisata_id' => $tempat->id],
+                [
+                    'vektor_kategori'  => $tempatKategoriScore[0],
+                    'vektor_fasilitas' => $tempatFasilitasVector,
+                    'vektor_harga'     => $tempatHarga[0],
+                    'vektor_rating'    => $tempatRating[0],
+                ]
+            );
         }
 
         // 3) URUTKAN SEMUA YANG LOLOS AMBANG BATAS
@@ -86,6 +98,7 @@ class RekomendasiService
                     'vektor_fasilitas' => json_encode($item['fasilitas_vector']),
                     'vektor_harga' => $this->normalizeHarga($tempat->harga),
                     'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata),
+                    'user_vector' => json_encode($userVector),
                     'skor_similarity' => $item['skor'],
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
@@ -181,5 +194,14 @@ class RekomendasiService
     private function calculateFacilityScore(array $facilityVector): float
     {
         return round(array_sum($facilityVector) / count($facilityVector), 4);
+    }
+
+    private function dotProduct(array $a, array $b): float
+    {
+        $dot = 0.0;
+        for ($i = 0; $i < count($a); $i++) {
+            $dot += $a[$i] * $b[$i];
+        }
+        return round($dot, 4);
     }
 }

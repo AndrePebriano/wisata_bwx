@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('tempat_wisata_id')->constrained()->onDelete('cascade');
+            $table->json('user_vector');
             $table->json('vektor_kategori');  // hasil normalisasi kategori
             $table->json('vektor_fasilitas'); // hasil normalisasi fasilitas
             $table->decimal('vektor_harga', 5, 3); // hasil normalisasi harga
