@@ -5,34 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RekomendasiHistoris extends Model
+class NormalisasiTempatWisata extends Model
 {
     use HasFactory;
-    protected $table = 'rekomendasi_historis';
+    protected $table = 'normalisasi_tempat_wisata';
 
     protected $fillable = [
-        'user_id',
         'tempat_wisata_id',
         'vektor_kategori',
         'vektor_fasilitas',
         'vektor_harga',
         'vektor_rating',
-        'user_vector',
-        'skor_similarity'
     ];
 
     protected $casts = [
-        'vektor_kategori' => 'array',
         'vektor_fasilitas' => 'array',
     ];
 
-    public function tempatWisata()
+    public function tempat()
     {
-        return $this->belongsTo(Tempat_Wisata::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Tempat_Wisata::class, 'tempat_wisata_id');
     }
 }
