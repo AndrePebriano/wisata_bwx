@@ -81,32 +81,30 @@ class RekomendasiService
         // 4) SIMPAN 5 TERATAS SAJA KE HISTORI
         $top5 = array_slice($rekomendasi, 0, 5);
 
-        if ($userId = Auth::id()) {
-            $batchData = [];
-            $timestamp = now();
+        $batchData = [];
+        $timestamp = now();
 
-            foreach ($top5 as $item) {
-                $tempat = $item['tempat'];
+        foreach ($top5 as $item) {
+            $tempat = $item['tempat'];
 
-                $batchData[] = [
-                    'user_id' => $userId,
-                    'tempat_wisata_id' => $tempat->id,
-                    'vektor_kategori' => $this->normalizeKategori(
-                        $tempat->kategoris->pluck('id')->toArray(),
-                        $this->getKategoriBobot()
-                    )[0],
-                    'vektor_fasilitas' => json_encode($item['fasilitas_vector']),
-                    'vektor_harga' => $this->normalizeHarga($tempat->harga),
-                    'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata),
-                    'user_vector' => json_encode($userVector),
-                    'skor_similarity' => $item['skor'],
-                    'created_at' => $timestamp,
-                    'updated_at' => $timestamp,
-                ];
-            }
-
-            RekomendasiHistoris::insert($batchData);
+            $batchData[] = [
+                'user_id' => null, // Tidak login, maka kosongkan user_id
+                'tempat_wisata_id' => $tempat->id,
+                'vektor_kategori' => $this->normalizeKategori(
+                    $tempat->kategoris->pluck('id')->toArray(),
+                    $this->getKategoriBobot()
+                )[0],
+                'vektor_fasilitas' => json_encode($item['fasilitas_vector']),
+                'vektor_harga' => $this->normalizeHarga($tempat->harga),
+                'vektor_rating' => $this->normalizeRating($tempat->rating_rata_rata),
+                'user_vector' => json_encode($userVector),
+                'skor_similarity' => $item['skor'],
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ];
         }
+
+        RekomendasiHistoris::insert($batchData);
 
         // 5) RETURN SEMUA YANG LOLOS ≥ 0.5
         return array_map(

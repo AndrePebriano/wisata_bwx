@@ -179,19 +179,11 @@
                 <div class="row justify-content-center align-items-center g-3">
                     <!-- Tombol Rekomendasi -->
                     <div class="col-auto">
-                        @auth
                             <!-- Jika user sudah login, tombol submit normal -->
                             <button type="submit" name="rekomendasi" value="true"
                                 class="btn btn-outline-maroon fw-bold px-4 py-2">
                                 <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
                             </button>
-                        @else
-                            <!-- Jika belum login, tombol trigger modal -->
-                            <button type="button" class="btn btn-outline-maroon fw-bold px-4 py-2"
-                                data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
-                                <i class="bi bi-stars"></i> Tampilkan Rekomendasi untuk Saya
-                            </button>
-                        @endauth
                     </div>
 
                     <!-- Tombol Cari dan Reset -->

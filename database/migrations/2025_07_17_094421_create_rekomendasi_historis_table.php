@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('rekomendasi_historis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('tempat_wisata_id')->constrained()->onDelete('cascade');
             $table->json('user_vector');
             $table->json('vektor_kategori');  // hasil normalisasi kategori
