@@ -32,7 +32,6 @@ class AdminController extends Controller
 
         $histori = Auth::check()
             ? RekomendasiHistoris::with('tempatWisata.kategoris', 'tempatWisata.fasilitas')
-            ->where('user_id', Auth::id())
             ->latest()
             ->take(5)
             ->get()
