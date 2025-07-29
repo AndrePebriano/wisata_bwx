@@ -5,7 +5,14 @@
     <h1 class="mb-4">Data Tempat Wisata</h1>
 
     <a href="{{ route('admin.tempat-wisata.create') }}" class="btn btn-primary mb-3">Tambah Tempat Wisata</a>
-    <a href="{{route('normalisasi.wisata')}}" class="btn btn-secondary mb-3">Hasil Perhitungan Normalisasi</a>
+    <button type="button" class="btn btn-success mb-3 me-2" data-toggle="modal" data-target="#importModal">
+        Import Excel
+    </button>
+    <a href="{{ asset('template/template-wisata.xlsx') }}" class="btn btn-info mb-3 me-2">
+        Download Template Excel
+    </a>
+    <a href="{{ route('normalisasi.wisata') }}" class="btn btn-secondary mb-3">Hasil Perhitungan Normalisasi</a>
+
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -29,9 +36,9 @@
                 <!-- Tampilkan gambar -->
                 <td>
                     @if($wisata->gambar)
-                        <img src="{{ asset($wisata->gambar) }}" width="100">
+                    <img src="{{ asset($wisata->gambar) }}" width="100">
                     @else
-                        <span class="text-muted">Tidak ada</span>
+                    <span class="text-muted">Tidak ada</span>
                     @endif
                 </td>
 
@@ -65,5 +72,29 @@
             @endforelse
         </tbody>
     </table>
+    <!-- Modal Import -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('admin.tempat-wisata.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Tempat Wisata dari Excel</h5>
+                        <button type="button" class="&times;" data-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="file">Pilih file Excel</label>
+                            <input type="file" class="form-control" name="file" required accept=".xlsx,.xls">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Import</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

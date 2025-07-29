@@ -26,6 +26,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Dashboard Admin
     Route::get('/home', [AdminController::class, 'index'])->name('admin.home');
+    
+    Route::post('tempat-wisata/import', [TempatWisataController::class, 'import'])->name('admin.tempat-wisata.import');
 
     // Manajemen Kategori
     Route::resource('kategori', KategoriController::class)->names('admin.kategori');
@@ -34,11 +36,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('fasilitas', FasilitasController::class)
         ->parameters(['fasilitas' => 'fasilitas'])
         ->names('admin.fasilitas');
-
+        
     // Manajemen Tempat Wisata
     Route::resource('tempat-wisata', TempatWisataController::class)
         ->parameters(['tempat-wisata' => 'tempat_wisata'])
         ->names('admin.tempat-wisata');
+
 
     // Edit dan update profil admin
     Route::get('/adminedit', [AdminController::class, 'edit'])->name('admin.edit');

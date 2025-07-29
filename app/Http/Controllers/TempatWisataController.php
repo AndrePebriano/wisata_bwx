@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\TempatWisataImport;
 use Illuminate\Http\Request;
 use App\Models\Tempat_Wisata;
 use App\Models\Kategori;
 use App\Models\Fasilitas;
 use App\Models\NormalisasiTempatWisata;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TempatWisataController extends Controller
 {
@@ -143,6 +145,20 @@ class TempatWisataController extends Controller
 
     public function normalisasi_wisata()
     {
-       dd('echo');
+        dd('echo');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xls,xlsx'
+        ]);
+
+        try {
+            Excel::import(new TempatWisataImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Data berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+        }
     }
 }
