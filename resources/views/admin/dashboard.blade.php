@@ -107,7 +107,14 @@
 
                             <td>{{ $item->tempatWisata->nama_tempat_wisata ?? '-' }}</td>
                             <td>
-                                <code>{{ number_format($item->vektor_kategori, 2) }}</code>
+                                @php
+    $vektorKategori = is_string($item->vektor_kategori)
+        ? json_decode($item->vektor_kategori, true)
+        : (is_array($item->vektor_kategori) ? $item->vektor_kategori : []);
+@endphp
+
+<code>[{{ implode(', ', $vektorKategori) }}]</code>
+
                             </td>
                             <td>
                                 @if (is_array($item->vektor_fasilitas))
