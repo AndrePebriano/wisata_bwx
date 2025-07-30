@@ -151,8 +151,12 @@ class RekomendasiService
     private function normalizeHarga($h): float
     {
         if (!$h || $h <= 0) return 0.0;
+
         $min = 10000;
-        $max = 50000;
+        $max = Tempat_Wisata::max('harga') ?? $min;
+
+        if ($max <= $min) return 1.0;
+
         $v = ($h - $min) / ($max - $min);
         return round(max(min($v, 1), 0), 4);
     }

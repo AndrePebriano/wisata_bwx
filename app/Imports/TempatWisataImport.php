@@ -13,27 +13,29 @@ class TempatWisataImport implements ToCollection, WithHeadingRow, WithBatchInser
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            // Simpan data utama
-            $tempat = Tempat_Wisata::create([
-                'nama_tempat_wisata' => $row['nama_tempat_wisata'],
-                'lokasi'             => $row['lokasi'],
-                'deskripsi'          => $row['deskripsi'],
-                'rating_rata_rata'   => $row['rating_rata_rata'],
-                'harga'              => $row['harga'],
-                'gambar'             => 'images/default.jpg',
-            ]);
+            // Buat atau update berdasarkan nama_tempat_wisata
+            $tempat = Tempat_Wisata::updateOrCreate(
+                ['nama_tempat_wisata' => $row['nama_tempat_wisata']], // kolom unik untuk pencocokan
+                [
+                    'lokasi'           => $row['lokasi'],
+                    'deskripsi'        => $row['deskripsi'],
+                    'rating_rata_rata' => $row['rating_rata_rata'],
+                    'harga'            => $row['harga'],
+                    'gambar'           => 'images/default.jpg',
+                ]
+            );
 
             // Ambil input kategori dan fasilitas berupa ID (contoh: "1,3")
             $kategoriIds = array_filter(array_map('intval', explode(',', $row['nama_kategori'] ?? '')));
             $fasilitasIds = array_filter(array_map('intval', explode(',', $row['nama_fasilitas'] ?? '')));
 
-            // Simpan ke tabel pivot jika tidak kosong
+            // Sinkronisasi tabel pivot (replace semua relasi)
             if (!empty($kategoriIds)) {
-                $tempat->kategoris()->attach($kategoriIds);
+                $tempat->kategoris()->sync($kategoriIds);
             }
 
             if (!empty($fasilitasIds)) {
-                $tempat->fasilitas()->attach($fasilitasIds);
+                $tempat->fasilitas()->sync($fasilitasIds);
             }
         }
     }
@@ -43,5 +45,3 @@ class TempatWisataImport implements ToCollection, WithHeadingRow, WithBatchInser
         return 50;
     }
 }
-
-
