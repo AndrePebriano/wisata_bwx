@@ -24,12 +24,14 @@
                 <h5>Hitung Dot Product (X’ ⋅ Y’)</h5>
                 @php
                     $dotSteps = [];
-                    foreach ($userVector as $i => $uVal) {
-                        $dotSteps[] = "({$uVal} × {$tempatVector[$i]})";
-                    }
                     $dotComponents = [];
-                    foreach ($userVector as $i => $uVal) {
-                        $dotComponents[] = round($uVal * $tempatVector[$i], 4);
+                    $length = min(count($userVector), count($tempatVector)); // ambil panjang terpendek agar aman
+
+                    for ($i = 0; $i < $length; $i++) {
+                        $uVal = $userVector[$i];
+                        $yVal = $tempatVector[$i];
+                        $dotSteps[] = "({$uVal} × {$yVal})";
+                        $dotComponents[] = round($uVal * $yVal, 4);
                     }
                 @endphp
                 <p>{!! implode(' + ', $dotSteps) !!}</p>
