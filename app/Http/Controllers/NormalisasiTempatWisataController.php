@@ -19,8 +19,13 @@ class NormalisasiTempatWisataController extends Controller
 
     public function showDetail($id)
     {
-        $tempat = Tempat_Wisata::with(['kategoris', 'fasilitas'])->findOrFail($id);
-        $historis = RekomendasiHistoris::where('tempat_wisata_id', $id)->latest()->firstOrFail();
+        // Ambil dari tabel normalisasi
+        $normalisasi = NormalisasiTempatWisata::with('tempat')->findOrFail($id);
+
+        $tempat = $normalisasi->tempat;
+        if (!$tempat) abort(404);
+
+        $historis = RekomendasiHistoris::where('tempat_wisata_id', $tempat->id)->latest()->firstOrFail();
 
         $userVector = json_decode($historis->user_vector, true);
         $tempatVector = array_merge(
@@ -32,19 +37,13 @@ class NormalisasiTempatWisataController extends Controller
             [$historis->vektor_rating]
         );
 
-
         $dot = $this->dotProduct($userVector, $tempatVector);
         $normUser = $this->vectorLength($userVector);
         $normTempat = $this->vectorLength($tempatVector);
         $similarity = $normUser && $normTempat ? round($dot / ($normUser * $normTempat), 4) : 0;
-        $userVector = array_map(function ($v) {
-            return is_array($v) ? reset($v) : $v;
-        }, $userVector);
 
-        $tempatVector = array_map(function ($v) {
-            return is_array($v) ? reset($v) : $v;
-        }, $tempatVector);
-
+        $userVector = array_map(fn($v) => is_array($v) ? reset($v) : $v, $userVector);
+        $tempatVector = array_map(fn($v) => is_array($v) ? reset($v) : $v, $tempatVector);
 
         return view('admin.tempat-wisata.detail', compact(
             'tempat',
