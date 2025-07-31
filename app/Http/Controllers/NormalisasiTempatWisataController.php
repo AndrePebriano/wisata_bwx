@@ -37,6 +37,14 @@ class NormalisasiTempatWisataController extends Controller
         $normUser = $this->vectorLength($userVector);
         $normTempat = $this->vectorLength($tempatVector);
         $similarity = $normUser && $normTempat ? round($dot / ($normUser * $normTempat), 4) : 0;
+        $userVector = array_map(function ($v) {
+            return is_array($v) ? reset($v) : $v;
+        }, $userVector);
+
+        $tempatVector = array_map(function ($v) {
+            return is_array($v) ? reset($v) : $v;
+        }, $tempatVector);
+
 
         return view('admin.tempat-wisata.detail', compact(
             'tempat',
@@ -75,8 +83,11 @@ class NormalisasiTempatWisataController extends Controller
 
     private function vectorLength($v)
     {
-        if (!is_array($v)) return 0.0; // Tangani jika bukan array
-        return round(sqrt(array_sum(array_map(fn($x) => $x ** 2, $v))), 4);
+        if (!is_array($v)) return 0.0;
+
+        return round(sqrt(array_sum(array_map(function ($x) {
+            return is_array($x) ? 0 : $x ** 2;
+        }, $v))), 4);
     }
 
 
